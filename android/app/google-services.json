@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "782048120114",
+    "firebase_url": "https://nurul-map2020-photomemo.firebaseio.com",
+    "project_id": "nurul-map2020-photomemo",
+    "storage_bucket": "nurul-map2020-photomemo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:782048120114:android:1aa328e7f6f09ac2601b2b",
+        "android_client_info": {
+          "package_name": "edu.uco.nakter1.map2020.photomemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "782048120114-2mgqv68gqmpqpil35lbou58mrftaeoou.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAszLOQuTk-gPJmq2yhAUPddKFqmfHqXLg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "782048120114-2mgqv68gqmpqpil35lbou58mrftaeoou.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
