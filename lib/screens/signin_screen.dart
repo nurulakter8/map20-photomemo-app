@@ -101,10 +101,9 @@ class _Controller {
 
     _state.formKey.currentState
         .save(); // saves email and password by calling save function
-    print('=== email: $email    password:   $password');
 
     try {
-      var user = await FirebaseController.signIn(email, password);
+      var user = await FirebaseController.signIn(email, password); // try to sign in using firebase
       print("user: $user");
     } catch (e) {
       MyDialog.info(
@@ -112,7 +111,11 @@ class _Controller {
         title: 'Sign in Error',
         content: e.message ?? e.toString(),
       );
+      return;
     }
+    // sign in success 
+    //1. read all photomemo's from firebase
+    //2. navigate to home screen to display photomemo
   }
 
   String validatorEmail(String value) {
