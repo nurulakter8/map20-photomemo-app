@@ -32,6 +32,26 @@ class _SignInState extends State<SignInScreen> {
           key: formKey, // thats the key we set up
           child: Column(
             children: <Widget>[
+              Stack(
+                // stacking widgeds to have it lay top of each other
+                children: <Widget>[
+                  // add images top of text form
+                  Image.asset('assets/images/postit.jpeg'),
+                  // additional custom text
+                  Positioned( // wrap with widget then type Positioned to position it correctly
+                  top: 150,
+                  left: 110,
+                    child: Text(
+                      "PhotoMemo",
+                      style: TextStyle(
+                          color: Colors.blue[600],
+                          fontFamily: 'JosefinSans',
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
               TextFormField(
                 // text field form for email
                 decoration: InputDecoration(
@@ -76,16 +96,17 @@ class _Controller {
   Future<void> signIn() async {
     // when sign in is pressed
     if (!_state.formKey.currentState.validate()) {
-      return; // if not valid then just return 
+      return; // if not valid then just return
     }
 
-    _state.formKey.currentState.save(); // saves email and password by calling save function
+    _state.formKey.currentState
+        .save(); // saves email and password by calling save function
     print('=== email: $email    password:   $password');
 
-    try{
+    try {
       var user = await FirebaseController.signIn(email, password);
       print("user: $user");
-    }catch(e){
+    } catch (e) {
       MyDialog.info(
         context: _state.context,
         title: 'Sign in Error',
