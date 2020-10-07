@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:photomemo/controller/firebasecontroller.dart';
+import 'package:photomemo/model/photomemo.dart';
 import 'package:photomemo/screens/views/mydialog.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -102,8 +104,10 @@ class _Controller {
     _state.formKey.currentState
         .save(); // saves email and password by calling save function
 
+    FirebaseUser user; // declaring user here to save firebase user info
+
     try {
-      var user = await FirebaseController.signIn(email, password); // try to sign in using firebase
+      user = await FirebaseController.signIn(email, password); // try to sign in using firebase user
       print("user: $user");
     } catch (e) {
       MyDialog.info(
@@ -115,6 +119,15 @@ class _Controller {
     }
     // sign in success 
     //1. read all photomemo's from firebase
+    try {
+      List<PhotoMemo> photoMemos = await FirebaseController.getPhotoMemos(user.email);
+      print('************');
+      print ('\n');
+      print(photoMemos.toString());
+
+    } catch (e) {
+      print("******** $e");
+    }
     //2. navigate to home screen to display photomemo
   }
 

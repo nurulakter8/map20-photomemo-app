@@ -1,9 +1,10 @@
 
 class PhotoMemo {
 // field name for firestore documents
-  static const COLLECTION = 'photoMemos';
+  static const COLLECTION = 'photoMemo';
+  static const IMAGE_FOLDER = 'photoMemoPictures'; // for the folder name and path vid 19
   static const TITLE = 'title';
-  static const MEMO = 'photoMemos';
+  static const MEMO = 'memo';
   static const CREATED_BY = 'createdBy';
   static const PHOTO_URL = 'photoURL';
   static const PHOTO_PATH = 'photoPath';
@@ -50,7 +51,12 @@ class PhotoMemo {
       photoPath: data[PhotoMemo.PHOTO_PATH],
       photoURL: data[PhotoMemo.PHOTO_URL],
       updatedAt: data[PhotoMemo.UPDATED_AT] != null ?
-        DateTime.fromMillisecondsSinceEpoch(data[PhotoMemo.UPDATED_AT]): null,
+        DateTime.fromMillisecondsSinceEpoch(data[PhotoMemo.UPDATED_AT].millisecondsSinceEpoch): null,
     );
+  }
+
+  @override
+  String toString(){
+    return '$docId $createdBy $title $memo /n $photoURL'; // to print after sign on pressed from signIn screen class
   }
 }
