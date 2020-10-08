@@ -1,7 +1,7 @@
 
 class PhotoMemo {
 // field name for firestore documents
-  static const COLLECTION = 'photoMemo';
+  static const COLLECTION = 'photoMemos';
   static const IMAGE_FOLDER = 'photoMemoPictures'; // for the folder name and path vid 19
   static const TITLE = 'title';
   static const MEMO = 'memo';
