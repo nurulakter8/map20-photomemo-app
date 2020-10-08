@@ -25,6 +25,8 @@ class _HomeState extends State<HomeScreen> {
     con = _Controller(this);
   }
 
+  void render(fn) => setState(fn);
+
   @override
   Widget build(BuildContext context) {
     Map arg = ModalRoute.of(context).settings.arguments;
@@ -81,10 +83,12 @@ class _Controller {
   _HomeState _state;
   _Controller(this._state);
 
-  void addButton() {
+  void addButton() async{
     // navigate to add screen
-    Navigator.pushNamed(_state.context, AddScreen.routeName,
+   await Navigator.pushNamed(_state.context, AddScreen.routeName,
         arguments: {'user': _state.user, 'photoMemoList': _state.photoMemos});
+
+        _state.render((){}); // redraw the screen
   }
 
   void signOut() async {

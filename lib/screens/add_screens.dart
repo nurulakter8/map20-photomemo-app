@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:photomemo/controller/firebasecontroller.dart';
+import 'package:photomemo/model/photomemo.dart';
 
 class AddScreen extends StatefulWidget {
   static const routeName = '/home/addScreen';
@@ -15,15 +18,25 @@ class AddScreen extends StatefulWidget {
 class _AddState extends State<AddScreen> {
   _Controller con; // state object
   File image; // variable to upload images
+  var formkey = GlobalKey<FormState>();
+  FirebaseUser user;
+  List<PhotoMemo> photoMemos;
+
   @override
   void initState() {
     super.initState();
     con = _Controller(this);
   }
-  void render(fn)=> setState(fn);
+
+  void render(fn) => setState(fn);
 
   @override
   Widget build(BuildContext context) {
+
+    Map args = ModalRoute.of(context).settings.arguments;
+    user ??= args ['user'];
+    photoMemos ??= args ['photoMemoList'];
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Add new Photo Demo'),
@@ -31,83 +44,86 @@ class _AddState extends State<AddScreen> {
           IconButton(icon: Icon(Icons.check), onPressed: con.save),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            Stack(
-              children: <Widget>[
-                Container(
-                  width: MediaQuery.of(context)
-                      .size
-                      .width, // utilize full width screeen
-                  child: image == null
-                      ? Icon(
-                          Icons.photo_library,
-                          size: 300,
-                        )
-                      : Image.file(image, fit: BoxFit.fill),
-                ),
-                Positioned(
-                  right: 0.0,
-                  bottom: 0.0,
-                  child: Container(
-                    color: Colors.blue[200],
-                    child: PopupMenuButton<String>(
-                      onSelected: con.getPicture,
-                      itemBuilder: (context) => <PopupMenuEntry<String>>[
-                        PopupMenuItem(
-                          value: 'camera',
-                          child: Row(
-                            children: <Widget>[
-                              Icon(Icons.photo_camera),
-                              Text('camera'),
-                            ],
+      body: Form(
+        key: formkey,
+        child: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              Stack(
+                children: <Widget>[
+                  Container(
+                    width: MediaQuery.of(context)
+                        .size
+                        .width, // utilize full width screeen
+                    child: image == null
+                        ? Icon(
+                            Icons.photo_library,
+                            size: 300,
+                          )
+                        : Image.file(image, fit: BoxFit.fill),
+                  ),
+                  Positioned(
+                    right: 0.0,
+                    bottom: 0.0,
+                    child: Container(
+                      color: Colors.blue[200],
+                      child: PopupMenuButton<String>(
+                        onSelected: con.getPicture,
+                        itemBuilder: (context) => <PopupMenuEntry<String>>[
+                          PopupMenuItem(
+                            value: 'camera',
+                            child: Row(
+                              children: <Widget>[
+                                Icon(Icons.photo_camera),
+                                Text('camera'),
+                              ],
+                            ),
                           ),
-                        ),
-                        PopupMenuItem(
-                          value: 'gallery',
-                          child: Row(
-                            children: <Widget>[
-                              Icon(Icons.photo_album),
-                              Text('Gallery'),
-                            ],
+                          PopupMenuItem(
+                            value: 'gallery',
+                            child: Row(
+                              children: <Widget>[
+                                Icon(Icons.photo_album),
+                                Text('Gallery'),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
+                ],
+              ),
+              TextFormField(
+                decoration: InputDecoration(
+                  hintText: 'Title',
                 ),
-              ],
-            ),
-            TextFormField(
-              decoration: InputDecoration(
-                hintText: 'Title',
+                autocorrect: true,
+                validator: con.validatorTitle,
+                onSaved: con.onSavedTitle,
               ),
-              autocorrect: true,
-              validator: con.validatorTitle,
-              onSaved: con.onSavedTitle,
-            ),
-            TextFormField(
-              decoration: InputDecoration(
-                hintText: 'Memo',
+              TextFormField(
+                decoration: InputDecoration(
+                  hintText: 'Memo',
+                ),
+                autocorrect: true,
+                keyboardType: TextInputType.multiline,
+                maxLines: 7,
+                validator: con.validatorMemo,
+                onSaved: con.onSavedMemo,
               ),
-              autocorrect: true,
-              keyboardType: TextInputType.multiline,
-              maxLines: 7,
-              validator: con.validatorMemo,
-              onSaved: con.onSavedMemo,
-            ),
-            TextFormField(
-              decoration: InputDecoration(
-                hintText: 'SharedWith (comma sperated email list)',
+              TextFormField(
+                decoration: InputDecoration(
+                  hintText: 'SharedWith (comma sperated email list)',
+                ),
+                autocorrect: true,
+                keyboardType: TextInputType.multiline,
+                maxLines: 3,
+                validator: con.validatorSharedWith,
+                onSaved: con.onSavedSharedWith,
               ),
-              autocorrect: true,
-              keyboardType: TextInputType.multiline,
-              maxLines: 3,
-              validator: con.validatorSharedWith,
-              onSaved: con.onSavedSharedWith,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -121,8 +137,36 @@ class _Controller {
   String memo;
   List<String> sharedWith = [];
 
-  void save() async{
-    
+  void save() async {
+    if (!_state.formkey.currentState.validate()) {
+      return;
+    }
+    _state.formkey.currentState.save();
+    //1. upload to firebase storage
+   Map <String, String> photoInfo = await FirebaseController.uploadStorage(
+      image: _state.image,
+      uid: _state.user.uid,
+      sharedWith: sharedWith,
+    );
+    //2. get image labels by ML kit
+    List<String> labels = await FirebaseController.getImageLabels(_state.image);
+    print('****** labels: ' + labels.toString());
+    //3. photomemo doc to Firestore
+    var p = PhotoMemo(
+      title: title,
+      memo: memo,
+      photoPath: photoInfo['path'],
+      photoURL: photoInfo['url'],
+      createdBy: _state.user.email,
+      sharedWith: sharedWith,
+      updatedAt: DateTime.now(),
+    );
+
+
+    p.docId = await FirebaseController.addPhotoMemo(p);
+    _state.photoMemos.insert(0, p); // adds to first position
+    Navigator.pop(_state.context);
+
   }
 
   void getPicture(String src) async {
@@ -133,7 +177,7 @@ class _Controller {
       } else {
         _imageFile = await ImagePicker().getImage(source: ImageSource.gallery);
       }
-      _state.render((){
+      _state.render(() {
         _state.image = File(_imageFile.path);
       });
     } catch (e) {}

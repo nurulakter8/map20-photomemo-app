@@ -11,6 +11,7 @@ class PhotoMemo {
   static const UPDATED_AT = 'updatedAt';
   static const SHARED_WITH = 'sharedWith';
   static const IMAGE_LABELS = 'imageLabels';
+  static const MIN_CONFIDENCE = 0.7;
 
   String docId; // firebase doc id
   String createdBy;
@@ -34,9 +35,9 @@ class PhotoMemo {
     this.updatedAt,
     this.sharedWith,
     this.imageLabels,
-  }){
+  }) {
     this.sharedWith ??= [];
-    this.imageLabels ??=[];
+    this.imageLabels ??= [];
   }
 // conver dart object to firestore document
   Map<String, dynamic> serialized() {
@@ -50,7 +51,6 @@ class PhotoMemo {
       UPDATED_AT: updatedAt,
       SHARED_WITH: sharedWith,
       IMAGE_LABELS: imageLabels,
-
     };
   }
 
