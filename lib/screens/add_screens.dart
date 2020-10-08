@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddScreen extends StatefulWidget {
   static const routeName = '/home/addScreen';
@@ -11,21 +14,71 @@ class AddScreen extends StatefulWidget {
 
 class _AddState extends State<AddScreen> {
   _Controller con; // state object
+  File image; // variable to upload images
   @override
   void initState() {
     super.initState();
     con = _Controller(this);
   }
+  void render(fn)=> setState(fn);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Add new Photo Demo'),
+        actions: <Widget>[
+          IconButton(icon: Icon(Icons.check), onPressed: con.save),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
+            Stack(
+              children: <Widget>[
+                Container(
+                  width: MediaQuery.of(context)
+                      .size
+                      .width, // utilize full width screeen
+                  child: image == null
+                      ? Icon(
+                          Icons.photo_library,
+                          size: 300,
+                        )
+                      : Image.file(image, fit: BoxFit.fill),
+                ),
+                Positioned(
+                  right: 0.0,
+                  bottom: 0.0,
+                  child: Container(
+                    color: Colors.blue[200],
+                    child: PopupMenuButton<String>(
+                      onSelected: con.getPicture,
+                      itemBuilder: (context) => <PopupMenuEntry<String>>[
+                        PopupMenuItem(
+                          value: 'camera',
+                          child: Row(
+                            children: <Widget>[
+                              Icon(Icons.photo_camera),
+                              Text('camera'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'gallery',
+                          child: Row(
+                            children: <Widget>[
+                              Icon(Icons.photo_album),
+                              Text('Gallery'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
             TextFormField(
               decoration: InputDecoration(
                 hintText: 'Title',
@@ -68,6 +121,24 @@ class _Controller {
   String memo;
   List<String> sharedWith = [];
 
+  void save() async{
+    
+  }
+
+  void getPicture(String src) async {
+    try {
+      PickedFile _imageFile;
+      if (src == 'camera') {
+        _imageFile = await ImagePicker().getImage(source: ImageSource.camera);
+      } else {
+        _imageFile = await ImagePicker().getImage(source: ImageSource.gallery);
+      }
+      _state.render((){
+        _state.image = File(_imageFile.path);
+      });
+    } catch (e) {}
+  }
+
   String validatorTitle(String value) {
     if (value == null || value.trim().length < 2) {
       return 'min 2 chars';
@@ -109,7 +180,7 @@ class _Controller {
   }
 
   void onSavedSharedWith(String value) {
-    if (value.trim().length != 0){
+    if (value.trim().length != 0) {
       this.sharedWith = value.split('.').map((e) => e.trim()).toList();
     }
   }
