@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photomemo/controller/firebasecontroller.dart';
 import 'package:photomemo/model/photomemo.dart';
+import 'package:photomemo/screens/views/mydialog.dart';
 
 class AddScreen extends StatefulWidget {
   static const routeName = '/home/addScreen';
@@ -32,10 +33,9 @@ class _AddState extends State<AddScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     Map args = ModalRoute.of(context).settings.arguments;
-    user ??= args ['user'];
-    photoMemos ??= args ['photoMemoList'];
+    user ??= args['user'];
+    photoMemos ??= args['photoMemoList'];
 
     return Scaffold(
       appBar: AppBar(
@@ -94,6 +94,12 @@ class _AddState extends State<AddScreen> {
                   ),
                 ],
               ),
+              con.uploadProgressMessage == null
+                  ? SizedBox(
+                      height: 1.0,
+                    )
+                  : Text(con.uploadProgressMessage,
+                      style: TextStyle(fontSize: 20)),
               TextFormField(
                 decoration: InputDecoration(
                   hintText: 'Title',
@@ -136,37 +142,54 @@ class _Controller {
   String title;
   String memo;
   List<String> sharedWith = [];
+  String uploadProgressMessage;
 
   void save() async {
     if (!_state.formkey.currentState.validate()) {
       return;
     }
     _state.formkey.currentState.save();
-    //1. upload to firebase storage
-   Map <String, String> photoInfo = await FirebaseController.uploadStorage(
-      image: _state.image,
-      uid: _state.user.uid,
-      sharedWith: sharedWith,
-    );
-    //2. get image labels by ML kit
-    List<String> labels = await FirebaseController.getImageLabels(_state.image);
-    print('****** labels: ' + labels.toString());
-    //3. photomemo doc to Firestore
-    var p = PhotoMemo(
-      title: title,
-      memo: memo,
-      photoPath: photoInfo['path'],
-      photoURL: photoInfo['url'],
-      createdBy: _state.user.email,
-      sharedWith: sharedWith,
-      updatedAt: DateTime.now(),
-    );
+    try {
+      MyDialog.circularPrpgressStart(_state.context);
+      //1. upload to firebase storage
+      Map<String, String> photoInfo = await FirebaseController.uploadStorage(
+        image: _state.image,
+        uid: _state.user.uid,
+        sharedWith: sharedWith,
+        listner: (progressPercentage){
+          _state.render((){
+            uploadProgressMessage = 'Uploading: ${progressPercentage.toStringAsFixed(1)} %';
+          });
+        }
+      );
+      //2. get image labels by ML kit
+      _state.render(() => uploadProgressMessage = 'ML Image Labelar started');
+      List<String> labels =
+          await FirebaseController.getImageLabels(_state.image);
+      print('****** labels: ' + labels.toString());
+      //3. photomemo doc to Firestore
+      var p = PhotoMemo(
+        title: title,
+        memo: memo,
+        photoPath: photoInfo['path'],
+        photoURL: photoInfo['url'],
+        createdBy: _state.user.email,
+        sharedWith: sharedWith,
+        updatedAt: DateTime.now(),
+        imageLabels: labels,
+      );
 
-
-    p.docId = await FirebaseController.addPhotoMemo(p);
-    _state.photoMemos.insert(0, p); // adds to first position
-    Navigator.pop(_state.context);
-
+      p.docId = await FirebaseController.addPhotoMemo(p);
+      _state.photoMemos.insert(0, p); // adds to first position
+      MyDialog.circularProgressEnd(_state.context);
+      Navigator.pop(_state.context);
+    } catch (e) {
+      MyDialog.info(
+        context: _state.context,
+        title: 'Firebase error',
+        content: e.message ?? e.toString(),
+      );
+    }
   }
 
   void getPicture(String src) async {

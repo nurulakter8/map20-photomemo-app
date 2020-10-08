@@ -26,6 +26,7 @@ class FirebaseController {
     QuerySnapshot querySnapshot = await Firestore.instance
         .collection(PhotoMemo.COLLECTION)
         .where(PhotoMemo.CREATED_BY, isEqualTo: email)
+        .orderBy(PhotoMemo.UPDATED_AT, descending: true)
         .getDocuments(); // this way we read all the documents from fire base
 
     var result =
@@ -43,10 +44,17 @@ class FirebaseController {
     String filePath,
     @required String uid,
     @required List<dynamic> sharedWith,
+    @required Function listner,
+
   }) async {
     filePath ??= '${PhotoMemo.IMAGE_FOLDER}/$uid/${DateTime.now()}';
     StorageUploadTask task =
         FirebaseStorage.instance.ref().child(filePath).putFile(image);
+
+    task.events.listen((event) {
+      double percentage = (event.snapshot.bytesTransferred.toDouble() / event.snapshot.totalByteCount.toDouble()) *100;
+      listner(percentage);
+    });
     var download = await task.onComplete;
     String url = await download.ref.getDownloadURL();
     return {'url': url, 'path': filePath};
