@@ -105,14 +105,15 @@ class _Controller {
 
     _state.formKey.currentState
         .save(); // saves email and password by calling save function
+    MyDialog.circularPrpgressStart(_state.context);
 
     FirebaseUser user; // declaring user here to save firebase user info
-
     try {
       user = await FirebaseController.signIn(
           email, password); // try to sign in using firebase user
       print("user: $user");
     } catch (e) {
+      MyDialog.circularProgressEnd(_state.context);
       MyDialog.info(
         context: _state.context,
         title: 'Sign in Error',
@@ -125,16 +126,20 @@ class _Controller {
     try {
       List<PhotoMemo> photoMemos =
           await FirebaseController.getPhotoMemos(user.email);
+      MyDialog.circularProgressEnd(_state.context);
+
       //2. navigate to home screen to display photomemo
       // print ('+++++++++++++');
       // print (photoMemos.toString());
-      Navigator.pushNamed(_state.context, HomeScreen.routeName,
-           arguments: {'user': user, 'photoMemoList': photoMemos});
+      Navigator.pushReplacementNamed(_state.context, HomeScreen.routeName,
+          arguments: {'user': user, 'photoMemoList': photoMemos});
     } catch (e) {
+      MyDialog.circularProgressEnd(_state.context);
       MyDialog.info(
         context: _state.context,
         title: 'Firebase/Firestore error',
-        content: 'Cannot get photo memo document. Try again later! \n ${e.message}',
+        content:
+            'Cannot get photo memo document. Try again later! \n ${e.message}',
       );
     }
   }

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:photomemo/screens/add_screens.dart';
 import 'package:photomemo/screens/home_screen.dart';
 import 'package:photomemo/screens/signin_screen.dart';
 
-void main (){
+void main() {
   runApp(PhotoMemoApp());
 }
 
-class PhotoMemoApp extends StatelessWidget{
+class PhotoMemoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -14,8 +15,8 @@ class PhotoMemoApp extends StatelessWidget{
       routes: {
         SignInScreen.routeName: (context) => SignInScreen(),
         HomeScreen.routeName: (context) => HomeScreen(),
+        AddScreen.routeName: (context) => AddScreen(),
       },
     );
   }
-  
 }

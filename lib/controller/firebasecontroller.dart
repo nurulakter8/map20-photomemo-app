@@ -13,9 +13,14 @@ class FirebaseController {
     return auth.user;
   }
 
+  static Future <void> signOut() async{
+    await FirebaseAuth.instance.signOut();
+  }
+
   static Future<List<PhotoMemo>> getPhotoMemos(String email) async {
     QuerySnapshot querySnapshot = await Firestore.instance
         .collection(PhotoMemo.COLLECTION)
+        .where(PhotoMemo.CREATED_BY, isEqualTo: email)
         .getDocuments(); // this way we read all the documents from fire base
 
     var result = <PhotoMemo>[] ; // get from fire store and include in list of obj
