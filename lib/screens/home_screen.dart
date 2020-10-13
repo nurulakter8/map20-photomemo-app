@@ -69,11 +69,14 @@ class _HomeState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text('Created by: ${photoMemos[index].createdBy}'),
+                        Text('Shared With: ${photoMemos[index].sharedWith}'),
                         Text('Updated at: ${photoMemos[index].updatedAt}'),
                         Text(photoMemos[index].memo),
                       ],
                     ),
+                    onTap: () => con.onTap(index),
                   ),
+              
                 )),
     );
   }
@@ -82,6 +85,12 @@ class _HomeState extends State<HomeScreen> {
 class _Controller {
   _HomeState _state;
   _Controller(this._state);
+
+  void onTap(int index){ // have to have index to know which one we are pressing.
+
+    print ('++++++ $index');
+
+  }
 
   void addButton() async{
     // navigate to add screen
