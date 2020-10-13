@@ -23,17 +23,54 @@ class _DetailedState extends State<DetailedScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args['user'];
     photoMemo ??= args['photoMemo'];
-    
 
-    return Scaffold( 
+    return Scaffold(
       appBar: AppBar(
         title: Text('Detailed View'),
       ),
-      body: Text('body'),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Stack(
+              children: <Widget>[
+                Container(
+                  width: MediaQuery.of(context)
+                      .size
+                      .width, // uses full width image size
+                  child:
+                      Image.network(photoMemo.photoURL), // picks the image url
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    color: Colors.grey,
+                    child: IconButton(
+                      icon: Icon(Icons.label),
+                      onPressed: con.showImageLabels,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Text(
+              photoMemo.title,
+              style: TextStyle(fontSize: 20.0), // display title
+            ),
+            Text(
+              photoMemo.memo,
+              style: TextStyle(fontSize: 16), // display notes memo
+            ),
+            Text('Created By: ${photoMemo.createdBy}'),
+            Text('Updated At: ${photoMemo.updatedAt}'),
+            Text('Shared With: ${photoMemo.sharedWith}'),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -41,4 +78,6 @@ class _DetailedState extends State<DetailedScreen> {
 class _Controller {
   _DetailedState _state;
   _Controller(this._state);
+
+  void showImageLabels() {}
 }

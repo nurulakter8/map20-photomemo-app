@@ -91,7 +91,7 @@ class _Controller {
   void onTap(int index){ // have to have index to know which one we are pressing.
    // print ('++++++ $index');
    Navigator.pushNamed(_state.context, DetailedScreen.routeName,
-   arguments: {'user': _state.user, 'PhotoMemo': _state.photoMemos[index]});
+   arguments: {'user': _state.user, 'photoMemo': _state.photoMemos[index]});
 
   }
 
