@@ -83,4 +83,11 @@ class FirebaseController {
     cloudLabeler.close();
     return labels;
   }
+
+  static Future <void> deletePhotoMemo (PhotoMemo photoMemo) async{ // deletes from firebase storage
+    await Firestore.instance.collection(PhotoMemo.COLLECTION).document(photoMemo.docId).delete();
+    await FirebaseStorage.instance.ref().child(photoMemo.photoPath).delete();
+
+  }
+
 }

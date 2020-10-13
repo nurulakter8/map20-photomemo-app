@@ -5,6 +5,7 @@ import 'package:photomemo/model/photomemo.dart';
 import 'package:photomemo/screens/add_screens.dart';
 import 'package:photomemo/screens/detailed_screen.dart';
 import 'package:photomemo/screens/signin_screen.dart';
+import 'package:photomemo/screens/views/mydialog.dart';
 import 'package:photomemo/screens/views/myimageview.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,6 +20,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeState extends State<HomeScreen> {
   _Controller con;
   FirebaseUser user;
+  var formKey = GlobalKey<FormState>(); // form key object
+
   List<PhotoMemo> photoMemos;
 
   @override
@@ -40,6 +43,33 @@ class _HomeState extends State<HomeScreen> {
       child: Scaffold(
           appBar: AppBar(
             title: Text('Home'),
+            actions: <Widget>[
+              Container( // container to add the search form, we are not searching by title or memos
+              width: 180.0,             
+                child: Form(
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      hintText: 'Image search',
+                      fillColor: Colors.white,
+                      filled: true,
+                    ),
+                    autocorrect: false,
+                    onSaved: con.onSavedSearchKey,
+                  ),
+                  key: formKey,
+                ),
+              ),
+              con.delIndex == null
+                  ? IconButton(
+                      icon: Icon(Icons.search), // if null show search
+                      onPressed: con.search,
+                    )
+                  : IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: con
+                          .delete, // delete function to delete selected listtile
+                    ),
+            ],
           ),
           drawer: Drawer(
             child: ListView(
@@ -101,7 +131,37 @@ class _HomeState extends State<HomeScreen> {
 class _Controller {
   _HomeState _state;
   int delIndex; // index count for deleting, initially its null value
+  String searchKey; // to save whatever is typed
   _Controller(this._state);
+
+  void onSavedSearchKey(String value){
+    searchKey = value;
+  }
+  void search() {
+    _state.formKey.currentState.save(); // whatever is typed we need to save first
+    //print(searchKey);
+    //now we can call function 
+    
+
+  }
+ 
+  void delete() async {
+    try {
+      PhotoMemo photoMemo = _state.photoMemos[delIndex];
+      await FirebaseController.deletePhotoMemo(
+          photoMemo); // calls firbasecontroller delete function
+      _state.render(() {
+        // inside render to refresh
+        _state.photoMemos.removeAt(delIndex);
+      });
+    } catch (e) {
+      MyDialog.info(
+        context: _state.context,
+        title: 'Delete Photomemo Error',
+        content: e.message ?? e.toString(),
+      );
+    }
+  }
 
   void onLongPress(int index) {
     // this state needs to be inside of render to draw and effect
@@ -113,6 +173,11 @@ class _Controller {
   void onTap(int index) {
     // have to have index to know which one we are pressing.
     // print ('++++++ $index');
+    if (delIndex != null) {
+      // cancel delete mode
+      _state.render(() => delIndex = null);
+      return;
+    }
     Navigator.pushNamed(_state.context, DetailedScreen.routeName, arguments: {
       'user': _state.user,
       'photoMemo': _state.photoMemos[index]
