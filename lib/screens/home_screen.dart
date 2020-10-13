@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:photomemo/controller/firebasecontroller.dart';
 import 'package:photomemo/model/photomemo.dart';
 import 'package:photomemo/screens/add_screens.dart';
+import 'package:photomemo/screens/detailed_screen.dart';
 import 'package:photomemo/screens/signin_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -64,6 +65,7 @@ class _HomeState extends State<HomeScreen> {
                   itemCount: photoMemos.length,
                   itemBuilder: (BuildContext context, int index) => ListTile(
                     leading: Image.network(photoMemos[index].photoURL),
+                    trailing: Icon(Icons.keyboard_arrow_right),
                     title: Text(photoMemos[index].title),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,8 +89,9 @@ class _Controller {
   _Controller(this._state);
 
   void onTap(int index){ // have to have index to know which one we are pressing.
-
-    print ('++++++ $index');
+   // print ('++++++ $index');
+   Navigator.pushNamed(_state.context, DetailedScreen.routeName,
+   arguments: {'user': _state.user, 'PhotoMemo': _state.photoMemos[index]});
 
   }
 
