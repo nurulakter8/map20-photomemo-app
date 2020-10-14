@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:photomemo/model/photomemo.dart';
+import 'package:photomemo/screens/edit_screen.dart';
 import 'package:photomemo/screens/views/mydialog.dart';
 import 'package:photomemo/screens/views/myimageview.dart';
 
@@ -32,6 +33,12 @@ class _DetailedState extends State<DetailedScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Detailed View'),
+         actions: <Widget>[
+           IconButton(
+             icon: Icon(Icons.edit),
+             onPressed: con.edit,
+           ),
+         ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -81,6 +88,12 @@ class _DetailedState extends State<DetailedScreen> {
 class _Controller {
   _DetailedState _state;
   _Controller(this._state);
+
+  void edit(){
+    Navigator.pushNamed(_state.context, EditScreen.routeName,
+    arguments: {'user': _state.user, 'photoMemo': _state.photoMemo});
+
+  }
 
   void showImageLabels() {
     MyDialog.info(

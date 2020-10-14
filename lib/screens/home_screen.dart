@@ -44,8 +44,9 @@ class _HomeState extends State<HomeScreen> {
           appBar: AppBar(
             title: Text('Home'),
             actions: <Widget>[
-              Container( // container to add the search form, we are not searching by title or memos
-              width: 180.0,             
+              Container(
+                // container to add the search form, we are not searching by title or memos
+                width: 180.0,
                 child: Form(
                   child: TextFormField(
                     decoration: InputDecoration(
@@ -134,17 +135,28 @@ class _Controller {
   String searchKey; // to save whatever is typed
   _Controller(this._state);
 
-  void onSavedSearchKey(String value){
+  void onSavedSearchKey(String value) {
     searchKey = value;
   }
-  void search() {
-    _state.formKey.currentState.save(); // whatever is typed we need to save first
-    //print(searchKey);
-    //now we can call function 
-    
 
+  void search() async {
+    _state.formKey.currentState
+        .save(); // whatever is typed we need to save first
+    //print(searchKey);
+    //now we can call function
+    var results;
+    if (searchKey == null || searchKey.trim().isEmpty) {
+      // if empty or nothing typed then don't do any searches
+      results = await FirebaseController.getPhotoMemos(_state.user.email);
+    } else {
+      results = await FirebaseController.searchImages(
+        email: _state.user.email,
+        imageLabel: searchKey,
+      );
+    }
+    _state.render(() => _state.photoMemos = results); // refresh the window
   }
- 
+
   void delete() async {
     try {
       PhotoMemo photoMemo = _state.photoMemos[delIndex];

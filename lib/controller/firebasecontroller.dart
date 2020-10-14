@@ -45,14 +45,15 @@ class FirebaseController {
     @required String uid,
     @required List<dynamic> sharedWith,
     @required Function listner,
-
   }) async {
     filePath ??= '${PhotoMemo.IMAGE_FOLDER}/$uid/${DateTime.now()}';
     StorageUploadTask task =
         FirebaseStorage.instance.ref().child(filePath).putFile(image);
 
     task.events.listen((event) {
-      double percentage = (event.snapshot.bytesTransferred.toDouble() / event.snapshot.totalByteCount.toDouble()) *100;
+      double percentage = (event.snapshot.bytesTransferred.toDouble() /
+              event.snapshot.totalByteCount.toDouble()) *
+          100;
       listner(percentage);
     });
     var download = await task.onComplete;
@@ -68,26 +69,48 @@ class FirebaseController {
     return ref.documentID;
   }
 
-  static Future<List<dynamic>> getImageLabels(File imageFile) async{
+  static Future<List<dynamic>> getImageLabels(File imageFile) async {
     //ML kit
     FirebaseVisionImage visionImage = FirebaseVisionImage.fromFile(imageFile);
     ImageLabeler cloudLabeler = FirebaseVision.instance.cloudImageLabeler();
     List<ImageLabel> cloudLabels = await cloudLabeler.processImage(visionImage);
 
-    var labels = <String> [];
-    for ( ImageLabel label in cloudLabels){
-      String text = label.text.toLowerCase();
+    var labels = <String>[];
+    for (ImageLabel label in cloudLabels) {
+      String text = label.text.toLowerCase(); // we can only search by lowercase case of that
       double confidence = label.confidence;
-      if(confidence >= PhotoMemo.MIN_CONFIDENCE) labels.add(text);
+      if (confidence >= PhotoMemo.MIN_CONFIDENCE) labels.add(text);
     }
     cloudLabeler.close();
     return labels;
   }
 
-  static Future <void> deletePhotoMemo (PhotoMemo photoMemo) async{ // deletes from firebase storage
-    await Firestore.instance.collection(PhotoMemo.COLLECTION).document(photoMemo.docId).delete();
+  static Future<void> deletePhotoMemo(PhotoMemo photoMemo) async {
+    // deletes from firebase storage
+    await Firestore.instance
+        .collection(PhotoMemo.COLLECTION)
+        .document(photoMemo.docId)
+        .delete();
     await FirebaseStorage.instance.ref().child(photoMemo.photoPath).delete();
-
   }
 
+  static Future<List<PhotoMemo>> searchImages({ // searches images based on labels
+    @required String email,
+    @required String imageLabel,
+  }) async {
+    QuerySnapshot querySnapshot = await Firestore.instance
+        .collection(PhotoMemo.COLLECTION)
+        .where(PhotoMemo.CREATED_BY, isEqualTo: email)
+        .where(PhotoMemo.IMAGE_LABELS, arrayContains: imageLabel.toLowerCase()) // change to lower case as well to match search with labels
+        .orderBy(PhotoMemo.UPDATED_AT, descending: true)
+        .getDocuments();
+
+        var result = <PhotoMemo> [];
+        if(querySnapshot != null && querySnapshot.documents.length != 0){
+          for(var doc in querySnapshot.documents){
+            result.add(PhotoMemo.deserialize(doc.data , doc.documentID));
+          }
+        }
+        return result;
+  }
 }
