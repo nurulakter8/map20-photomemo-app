@@ -113,4 +113,15 @@ class FirebaseController {
         }
         return result;
   }
+
+//edit photo and update on firebase storage
+  static Future <void> updatePhotoMemo (PhotoMemo photoMemo) async {
+    photoMemo.updatedAt = DateTime.now();
+    await Firestore.instance
+    .collection(PhotoMemo.COLLECTION)
+    .document(photoMemo.docId)
+    .setData(photoMemo.serialized());
+  }
+
+
 }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:photomemo/controller/firebasecontroller.dart';
 import 'package:photomemo/model/photomemo.dart';
 import 'package:photomemo/screens/views/mydialog.dart';
 import 'package:photomemo/screens/views/myimageview.dart';
@@ -147,13 +148,36 @@ class _Controller {
   File imageFile; // thats when we retrive from camera or gallery
   _Controller(this._state);
 
-  void save() async{
-    if(!_state.formKey.currentState.validate()) return;
+  void save() async {
+    if (!_state.formKey.currentState.validate()) return;
 
     _state.formKey.currentState.save();
 
     //1. if image has been changed, update Storage
+    try {
+      if (imageFile != null) {
+        // esistance photo will be uploaded
+        Map<String, String> photo = await FirebaseController.uploadStorage(
+          image: imageFile,
+          uid: _state.user.uid,
+          sharedWith: _state.photoMemo.sharedWith,
+          listner: null,
+        );
+        _state.photoMemo.photoPath = photo['path'];
+        _state.photoMemo.photoURL = photo['url'];
 
+        // Image labeler ML
+        List<String> labels = await FirebaseController.getImageLabels(imageFile);
+        _state.photoMemo.imageLabels = labels;
+      }else{
+        // no image chage 
+      }
+
+      await FirebaseController.updatePhotoMemo(_state.photoMemo);  // updates and saves 
+      Navigator.pop(_state.context); // will go back to detailed view
+    } catch (e) {
+
+    }
     //2. save document in FireStore
   }
 
