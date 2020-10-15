@@ -4,6 +4,7 @@ import 'package:photomemo/controller/firebasecontroller.dart';
 import 'package:photomemo/model/photomemo.dart';
 import 'package:photomemo/screens/add_screens.dart';
 import 'package:photomemo/screens/detailed_screen.dart';
+import 'package:photomemo/screens/settings_screen.dart';
 import 'package:photomemo/screens/sharedwith_screen.dart';
 import 'package:photomemo/screens/signin_screen.dart';
 import 'package:photomemo/screens/views/mydialog.dart';
@@ -77,6 +78,12 @@ class _HomeState extends State<HomeScreen> {
             child: ListView(
               children: <Widget>[
                 UserAccountsDrawerHeader(
+                  currentAccountPicture: ClipOval(
+                    child: MyImageView.network(
+                      imageUrl: user.photoUrl,
+                      context: context,
+                    ),
+                  ),
                   accountName: Text(user.displayName ?? 'N/A'),
                   accountEmail: Text(user.email),
                 ),
@@ -84,12 +91,16 @@ class _HomeState extends State<HomeScreen> {
                   leading: Icon(Icons.people),
                   title: Text('Shared With me'),
                   onTap: con.sharedWith,
-
                 ),
                 ListTile(
                   leading: Icon(Icons.exit_to_app),
                   title: Text('Sign out'),
                   onTap: con.signOut,
+                ),
+                ListTile(
+                  leading: Icon(Icons.settings),
+                  title: Text('Settings'),
+                  onTap: con.settings,
                 ),
               ],
             ),
@@ -142,20 +153,33 @@ class _Controller {
   String searchKey; // to save whatever is typed
   _Controller(this._state);
 
-  void sharedWith() async{
+  void settings() async {
+    await Navigator.pushNamed(_state.context, SettingsScreen.routeName,
+        arguments: _state.user);
+
+    // to get updated user profile do the following 2 steps
+    await _state.user.reload();
+    _state.user = await FirebaseAuth.instance.currentUser();
+
+    Navigator.pop(_state.context); // this will close the drawer
+  }
+
+  void sharedWith() async {
     try {
-      List<PhotoMemo> sharedPhotoMemos = 
-      await FirebaseController.getPhotoMemosSharedWithMe(_state.user.email);
-      
-      await Navigator.pushNamed(_state.context, SharedWithScreen.routeName, arguments: 
-      {'user': _state.user, 'sharedPhotoMemoList': sharedPhotoMemos});
+      List<PhotoMemo> sharedPhotoMemos =
+          await FirebaseController.getPhotoMemosSharedWithMe(_state.user.email);
+
+      await Navigator.pushNamed(_state.context, SharedWithScreen.routeName,
+          arguments: {
+            'user': _state.user,
+            'sharedPhotoMemoList': sharedPhotoMemos
+          });
 
       Navigator.pop(_state.context); // this will close the drawer
 
       // print('shared with me');
       // print(sharedPhotoMemos.toString());
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   void onSavedSearchKey(String value) {
@@ -213,11 +237,12 @@ class _Controller {
       _state.render(() => delIndex = null);
       return;
     }
-    await Navigator.pushNamed(_state.context, DetailedScreen.routeName, arguments: {
-      'user': _state.user,
-      'photoMemo': _state.photoMemos[index]
-    });
-    _state.render((){}); // so that it refreshes after edited. 
+    await Navigator.pushNamed(_state.context, DetailedScreen.routeName,
+        arguments: {
+          'user': _state.user,
+          'photoMemo': _state.photoMemos[index]
+        });
+    _state.render(() {}); // so that it refreshes after edited.
   }
 
   void addButton() async {

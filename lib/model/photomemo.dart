@@ -3,6 +3,7 @@ class PhotoMemo {
   static const COLLECTION = 'photoMemos';
   static const IMAGE_FOLDER =
       'photoMemoPictures'; // for the folder name and path vid 19
+  static const PROFILE_FOLDER = 'profilePictures';
   static const TITLE = 'title';
   static const MEMO = 'memo';
   static const CREATED_BY = 'createdBy';

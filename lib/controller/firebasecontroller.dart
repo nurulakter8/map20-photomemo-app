@@ -137,11 +137,48 @@ class FirebaseController {
 
     var result = <PhotoMemo>[];
     if (querySnapshot != null && querySnapshot.documents.length != 0) {
-      for(var doc in querySnapshot.documents){
+      for (var doc in querySnapshot.documents) {
         result.add(PhotoMemo.deserialize(doc.data, doc.documentID));
-
       }
     }
     return result;
+  }
+
+  // for sign up
+  static Future<void> signUp(String email, String password) async {
+    await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  static Future<void> updateProfile({
+    @required File image, // null no update needed
+    @required String displayName,
+    @required FirebaseUser user,
+    @required Function progressListner,
+  }) async{
+    UserUpdateInfo updateInfo = UserUpdateInfo();
+    updateInfo.displayName = displayName;
+
+    if(image!= null){
+      String filePath = '${PhotoMemo.PROFILE_FOLDER}/${user.uid}/${user.uid}';
+      StorageUploadTask uploadTask = 
+      FirebaseStorage.instance.ref().child(filePath).putFile(image);
+
+      uploadTask.events.listen((event) {
+        double percentage = (event.snapshot.bytesTransferred.toDouble() /
+        event.snapshot.totalByteCount.toDouble()) * 100;
+        progressListner(percentage);
+
+      });
+
+      var download = await uploadTask.onComplete;
+      String url = await download.ref.getDownloadURL();
+
+      updateInfo.photoUrl = url;
+
+    }
+    await user.updateProfile(updateInfo);
   }
 }
