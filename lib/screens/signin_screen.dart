@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:photomemo/controller/firebasecontroller.dart';
 import 'package:photomemo/model/photomemo.dart';
 import 'package:photomemo/screens/home_screen.dart';
+import 'package:photomemo/screens/signup_screen.dart';
 import 'package:photomemo/screens/views/mydialog.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -83,6 +84,14 @@ class _SignInState extends State<SignInScreen> {
                 color: Colors.blue,
                 onPressed: con.signIn, // function
               ),
+              SizedBox(height: 30),
+              FlatButton(
+                onPressed: con.signUp,
+                child: Text(
+                  'No account yet? Click here to create',
+                  style: TextStyle(fontSize: 15),
+                ),
+              ),
             ],
           ),
         ),
@@ -96,6 +105,10 @@ class _Controller {
   _Controller(this._state);
   String email; // valided ones will be there
   String password;
+
+  void signUp() async {
+    Navigator.pushNamed(_state.context, SignUpScreen.routeName);
+  }
 
   Future<void> signIn() async {
     // when sign in is pressed

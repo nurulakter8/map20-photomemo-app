@@ -98,6 +98,14 @@ class _EditState extends State<EditScreen> {
                   ),
                 ],
               ),
+              con.uploadProgress == null
+                  ? SizedBox(
+                      height: 1,
+                    )
+                  : Text(
+                      con.uploadProgress,
+                      style: TextStyle(fontSize: 20),
+                    ),
               TextFormField(
                 // edit title
                 style: TextStyle(fontSize: 20),
@@ -128,7 +136,7 @@ class _EditState extends State<EditScreen> {
                 decoration: InputDecoration(
                   hintText: 'Shared With',
                 ),
-                initialValue: photoMemo.sharedWith.join(','),
+                initialValue: photoMemo.sharedWith.join('.'), ///
                 autocorrect: false,
                 keyboardType: TextInputType.multiline,
                 maxLines: 2,
@@ -146,6 +154,7 @@ class _EditState extends State<EditScreen> {
 class _Controller {
   _EditState _state;
   File imageFile; // thats when we retrive from camera or gallery
+  String uploadProgress;
   _Controller(this._state);
 
   void save() async {
@@ -155,28 +164,49 @@ class _Controller {
 
     //1. if image has been changed, update Storage
     try {
+      MyDialog.circularPrpgressStart(_state.context);
+
       if (imageFile != null) {
         // esistance photo will be uploaded
         Map<String, String> photo = await FirebaseController.uploadStorage(
           image: imageFile,
           uid: _state.user.uid,
           sharedWith: _state.photoMemo.sharedWith,
-          listner: null,
+          listner: (progress) {
+            // this will be called when uploading
+            _state.render(() {
+              uploadProgress = 'Uploading ${progress.toStringAsFixed()} %';
+            });
+          },
         );
         _state.photoMemo.photoPath = photo['path'];
         _state.photoMemo.photoURL = photo['url'];
 
-        // Image labeler ML
-        List<String> labels = await FirebaseController.getImageLabels(imageFile);
+        // Imagelabeler ML
+        _state.render(() => uploadProgress = 'ML Image Labeler started'); // progress
+
+        List<String> labels =
+            await FirebaseController.getImageLabels(imageFile);
         _state.photoMemo.imageLabels = labels;
-      }else{
-        // no image chage 
+      } else {
+        // no image chage
       }
 
-      await FirebaseController.updatePhotoMemo(_state.photoMemo);  // updates and saves 
+      _state.render(() => uploadProgress = 'Firestore doc updating....'); // progress
+
+      await FirebaseController.updatePhotoMemo(
+          _state.photoMemo); // updates and saves
+
+      MyDialog.circularProgressEnd(_state.context); //progress
+
       Navigator.pop(_state.context); // will go back to detailed view
     } catch (e) {
-
+      MyDialog.circularProgressEnd(_state.context); // progress
+      MyDialog.info(
+        context: _state.context,
+        title: 'Edit photomemo error in saving',
+        content: e.message ?? e.toString(),
+      );
     }
     //2. save document in FireStore
   }
@@ -197,7 +227,7 @@ class _Controller {
   void onSavedSharedWith(String value) {
     if (value.trim().length != 0) {
       _state.photoMemo.sharedWith =
-          value.split('.').map((e) => e.trim()).toList();
+          value.split(',').map((e) => e.trim()).toList();
     }
   }
 

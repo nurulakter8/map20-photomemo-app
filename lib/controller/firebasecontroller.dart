@@ -77,7 +77,8 @@ class FirebaseController {
 
     var labels = <String>[];
     for (ImageLabel label in cloudLabels) {
-      String text = label.text.toLowerCase(); // we can only search by lowercase case of that
+      String text = label.text
+          .toLowerCase(); // we can only search by lowercase case of that
       double confidence = label.confidence;
       if (confidence >= PhotoMemo.MIN_CONFIDENCE) labels.add(text);
     }
@@ -94,34 +95,53 @@ class FirebaseController {
     await FirebaseStorage.instance.ref().child(photoMemo.photoPath).delete();
   }
 
-  static Future<List<PhotoMemo>> searchImages({ // searches images based on labels
+  static Future<List<PhotoMemo>> searchImages({
+    // searches images based on labels
     @required String email,
     @required String imageLabel,
   }) async {
     QuerySnapshot querySnapshot = await Firestore.instance
         .collection(PhotoMemo.COLLECTION)
         .where(PhotoMemo.CREATED_BY, isEqualTo: email)
-        .where(PhotoMemo.IMAGE_LABELS, arrayContains: imageLabel.toLowerCase()) // change to lower case as well to match search with labels
+        .where(PhotoMemo.IMAGE_LABELS,
+            arrayContains: imageLabel
+                .toLowerCase()) // change to lower case as well to match search with labels
         .orderBy(PhotoMemo.UPDATED_AT, descending: true)
         .getDocuments();
 
-        var result = <PhotoMemo> [];
-        if(querySnapshot != null && querySnapshot.documents.length != 0){
-          for(var doc in querySnapshot.documents){
-            result.add(PhotoMemo.deserialize(doc.data , doc.documentID));
-          }
-        }
-        return result;
+    var result = <PhotoMemo>[];
+    if (querySnapshot != null && querySnapshot.documents.length != 0) {
+      for (var doc in querySnapshot.documents) {
+        result.add(PhotoMemo.deserialize(doc.data, doc.documentID));
+      }
+    }
+    return result;
   }
 
 //edit photo and update on firebase storage
-  static Future <void> updatePhotoMemo (PhotoMemo photoMemo) async {
+  static Future<void> updatePhotoMemo(PhotoMemo photoMemo) async {
     photoMemo.updatedAt = DateTime.now();
     await Firestore.instance
-    .collection(PhotoMemo.COLLECTION)
-    .document(photoMemo.docId)
-    .setData(photoMemo.serialized());
+        .collection(PhotoMemo.COLLECTION)
+        .document(photoMemo.docId)
+        .setData(photoMemo.serialized());
   }
 
+  // to share all the docs
+  static Future<List<PhotoMemo>> getPhotoMemosSharedWithMe(String email) async {
+    QuerySnapshot querySnapshot = await Firestore.instance
+        .collection(PhotoMemo.COLLECTION)
+        .where(PhotoMemo.SHARED_WITH, arrayContains: email)
+        .orderBy(PhotoMemo.UPDATED_AT, descending: true)
+        .getDocuments();
 
+    var result = <PhotoMemo>[];
+    if (querySnapshot != null && querySnapshot.documents.length != 0) {
+      for(var doc in querySnapshot.documents){
+        result.add(PhotoMemo.deserialize(doc.data, doc.documentID));
+
+      }
+    }
+    return result;
+  }
 }

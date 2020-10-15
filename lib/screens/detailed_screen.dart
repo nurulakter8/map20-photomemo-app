@@ -23,6 +23,7 @@ class _DetailedState extends State<DetailedScreen> {
     super.initState();
     con = _Controller(this);
   }
+  void render(fn) => setState(fn);
 
   @override
   Widget build(BuildContext context) {
@@ -89,9 +90,10 @@ class _Controller {
   _DetailedState _state;
   _Controller(this._state);
 
-  void edit(){
-    Navigator.pushNamed(_state.context, EditScreen.routeName,
+  void edit() async{
+    await Navigator.pushNamed(_state.context, EditScreen.routeName,
     arguments: {'user': _state.user, 'photoMemo': _state.photoMemo});
+    _state.render((){});
 
   }
 

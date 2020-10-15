@@ -248,7 +248,7 @@ class _Controller {
 
   void onSavedSharedWith(String value) {
     if (value.trim().length != 0) {
-      this.sharedWith = value.split('.').map((e) => e.trim()).toList();
+      this.sharedWith = value.split(',').map((e) => e.trim()).toList(); ////
     }
   }
 }
