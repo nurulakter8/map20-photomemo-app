@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photomemo/controller/firebasecontroller.dart';
 import 'package:photomemo/screens/views/mydialog.dart';
@@ -46,7 +47,10 @@ class _SettingsState extends State<SettingsScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: <Widget>[
-              Text('Change Profile Picture', style: TextStyle(fontSize: 20),),
+              Text(
+                'Change Profile Picture',
+                style: TextStyle(fontSize: 20),
+              ),
               Stack(
                 children: <Widget>[
                   Container(
@@ -120,6 +124,7 @@ class _Controller {
 
   String displayName;
   File imageFile;
+   File _cropped; // for cropped image
   _Controller(this._state);
 
   void save() async {
@@ -151,11 +156,26 @@ class _Controller {
   void getPicture(String src) async {
     try {
       PickedFile _image;
-      if (src == 'camera')
+      if (src == 'camera') {
         _image = await ImagePicker().getImage(source: ImageSource.camera);
-      else
+      } else
         _image = await ImagePicker().getImage(source: ImageSource.gallery);
-      _state.render(() => imageFile = File(_image.path));
+        if (_image != null){
+           _cropped = await ImageCropper.cropImage(
+          sourcePath: _image.path,
+          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+          compressQuality: 100,
+          maxWidth: 700,
+          maxHeight: 700,
+          compressFormat: ImageCompressFormat.jpg,
+          androidUiSettings: AndroidUiSettings(
+              toolbarColor: Colors.deepOrange,
+              toolbarTitle: 'Image Cropper',
+              statusBarColor: Colors.blue,
+              backgroundColor: Colors.white),
+        );
+        }
+      _state.render(() => imageFile = File(_cropped.path));
     } catch (e) {
       MyDialog.info(
         context: _state.context,
