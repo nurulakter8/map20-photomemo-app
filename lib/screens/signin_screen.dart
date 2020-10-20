@@ -6,6 +6,8 @@ import 'package:photomemo/screens/home_screen.dart';
 import 'package:photomemo/screens/signup_screen.dart';
 import 'package:photomemo/screens/views/mydialog.dart';
 
+import 'forgotPassword_screen.dart';
+
 class SignInScreen extends StatefulWidget {
   static const routeName = '/signInScreen';
   @override
@@ -76,6 +78,21 @@ class _SignInState extends State<SignInScreen> {
                 validator: con.validatorPassword, // function
                 onSaved: con.onSavedPassword, // function
               ),
+              // forgot password
+              Padding(
+                padding: EdgeInsets.only(right: 20),
+                child: Container(
+                  width: double.infinity,
+                  child: InkWell(
+                    onTap: con.forgotPassword,
+                    child: Text(
+                      'Forgot Password?',
+                      style: TextStyle(color: Colors.blue),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ),
+              ),
               RaisedButton(
                 child: Text(
                   "Sign In",
@@ -105,6 +122,10 @@ class _Controller {
   _Controller(this._state);
   String email; // valided ones will be there
   String password;
+
+  void forgotPassword() async{
+    Navigator.pushNamed(_state.context, ForgotPasswordScreen.routeName);
+  }
 
   void signUp() async {
     Navigator.pushNamed(_state.context, SignUpScreen.routeName);

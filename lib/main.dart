@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:photomemo/screens/add_screens.dart';
 import 'package:photomemo/screens/detailed_screen.dart';
 import 'package:photomemo/screens/edit_screen.dart';
+import 'package:photomemo/screens/forgotPassword_screen.dart';
 import 'package:photomemo/screens/home_screen.dart';
 import 'package:photomemo/screens/settings_screen.dart';
 import 'package:photomemo/screens/sharedwith_screen.dart';
@@ -26,6 +27,7 @@ class PhotoMemoApp extends StatelessWidget {
         SharedWithScreen.routeName: (context) => SharedWithScreen(),
         SignUpScreen.routeName: (context) => SignUpScreen(),
         SettingsScreen.routeName: (context) => SettingsScreen(),
+        ForgotPasswordScreen.routeName: (context) => ForgotPasswordScreen(),
       },
     );
   }

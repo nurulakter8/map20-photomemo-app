@@ -16,10 +16,12 @@ class FirebaseController {
       password: password,
     );
     return auth.user;
+
   }
 
   static Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
+    
   }
 
   static Future<List<PhotoMemo>> getPhotoMemos(String email) async {
