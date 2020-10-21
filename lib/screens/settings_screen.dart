@@ -169,10 +169,10 @@ class _Controller {
           maxHeight: 700,
           compressFormat: ImageCompressFormat.jpg,
           androidUiSettings: AndroidUiSettings(
-              toolbarColor: Colors.deepOrange,
+              toolbarColor: Colors.white,
               toolbarTitle: 'Image Cropper',
               statusBarColor: Colors.blue,
-              backgroundColor: Colors.white),
+              backgroundColor: Colors.black),
         );
         }
       _state.render(() => imageFile = File(_cropped.path));

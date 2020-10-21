@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photomemo/controller/firebasecontroller.dart';
 import 'package:photomemo/model/photomemo.dart';
@@ -136,7 +137,9 @@ class _EditState extends State<EditScreen> {
                 decoration: InputDecoration(
                   hintText: 'Shared With',
                 ),
-                initialValue: photoMemo.sharedWith.join('.'), ///
+                initialValue: photoMemo.sharedWith.join('.'),
+
+                ///
                 autocorrect: false,
                 keyboardType: TextInputType.multiline,
                 maxLines: 2,
@@ -154,6 +157,8 @@ class _EditState extends State<EditScreen> {
 class _Controller {
   _EditState _state;
   File imageFile; // thats when we retrive from camera or gallery
+  File _cropped; // for cropped image
+
   String uploadProgress;
   _Controller(this._state);
 
@@ -183,7 +188,8 @@ class _Controller {
         _state.photoMemo.photoURL = photo['url'];
 
         // Imagelabeler ML
-        _state.render(() => uploadProgress = 'ML Image Labeler started'); // progress
+        _state.render(
+            () => uploadProgress = 'ML Image Labeler started'); // progress
 
         List<String> labels =
             await FirebaseController.getImageLabels(imageFile);
@@ -192,7 +198,8 @@ class _Controller {
         // no image chage
       }
 
-      _state.render(() => uploadProgress = 'Firestore doc updating....'); // progress
+      _state.render(
+          () => uploadProgress = 'Firestore doc updating....'); // progress
 
       await FirebaseController.updatePhotoMemo(
           _state.photoMemo); // updates and saves
@@ -262,9 +269,9 @@ class _Controller {
       if (src == 'camera') {
         // pick either one
         _imageFile = await ImagePicker().getImage(source: ImageSource.camera);
-      } else {
+      } else 
         _imageFile = await ImagePicker().getImage(source: ImageSource.gallery);
-      }
+      
       _state.render(() {
         imageFile = File(_imageFile.path);
       });
