@@ -109,6 +109,16 @@ class _SettingsState extends State<SettingsScreen> {
                 validator: con.validatorDisplayName,
                 onSaved: con.onSavesDisplayName,
               ),
+              TextFormField(
+                style: TextStyle(fontSize: 20),
+                decoration: InputDecoration(
+                  hintText: 'Bio',
+                ),
+                //initialValue: user.displayBio?? 'Bio..',
+                autocorrect: false,
+                validator: con.validatorDisplayBio,
+                onSaved: con.onSavesDisplayBio,
+              ),
             ],
           ),
         ),
@@ -123,6 +133,7 @@ class _Controller {
   String progressMessage;
 
   String displayName;
+  String displayBio;
   File imageFile;
    File _cropped; // for cropped image
   _Controller(this._state);
@@ -136,6 +147,7 @@ class _Controller {
       await FirebaseController.updateProfile(
         image: imageFile,
         displayName: displayName,
+        displayBio: displayBio,
         user: _state.user,
         progressListner: (double percentage) {
           _state.render(() {
@@ -194,5 +206,15 @@ class _Controller {
 
   void onSavesDisplayName(String value) {
     this.displayName = value;
+  }
+  String validatorDisplayBio(String value) {
+    if (value.length < 2)
+      return 'min 2 chars';
+    else
+      return null;
+  }
+
+  void onSavesDisplayBio(String value) {
+    this.displayBio = value;
   }
 }
