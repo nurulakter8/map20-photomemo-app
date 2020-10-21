@@ -157,13 +157,11 @@ class FirebaseController {
   static Future<void> updateProfile({
     @required File image, // null no update needed
     @required String displayName,
-    @required String displayBio, // bio
     @required FirebaseUser user,
     @required Function progressListner,
   }) async{
     UserUpdateInfo updateInfo = UserUpdateInfo();
     updateInfo.displayName = displayName;
-    //updateInfo.displayBio = displayBio;
 
     if(image!= null){
       String filePath = '${PhotoMemo.PROFILE_FOLDER}/${user.uid}/${user.uid}';
@@ -181,6 +179,7 @@ class FirebaseController {
       String url = await download.ref.getDownloadURL();
 
       updateInfo.photoUrl = url;
+
 
     }
     await user.updateProfile(updateInfo);
